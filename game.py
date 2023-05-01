@@ -674,6 +674,10 @@ class Game():
 		self.active = True      # if False, players won't be able to do anything
 		self.draw()
 
+		pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
+		return self.screen_buffer.transpose((1,0,2))
+
+
 	def step(self, action:int):
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
 		# 0: fire, 1~4: move, 5: idle
