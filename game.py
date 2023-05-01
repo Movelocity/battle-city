@@ -287,6 +287,7 @@ class Game():
 
 		for player in self.players:
 			player.level = self.level
+			player.lives = 3
 			self.respawnPlayer(player, True)
 
 	def showScores(self):
