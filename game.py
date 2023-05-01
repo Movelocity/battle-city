@@ -641,7 +641,7 @@ class Game():
 
 		print("Stage "+str(self.stage)+" completed")
 
-	def reset(self):
+	def reset(self, stage=None):
 		""" Start next level. 下面会进入while循环 """
 		del self.bullets[:]
 		del self.enemies[:]
@@ -650,7 +650,10 @@ class Game():
 		del self.timer_pool.timers[:]
 
 		# load level
-		self.stage = random.randint(1,35)
+		if stage is None:
+			self.stage = random.randint(1,35)
+		else:
+			self.stage = stage
 		self.level = Level(game=self, level_nr=self.stage)
 		self.timefreeze = False
 
