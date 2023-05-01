@@ -100,17 +100,20 @@ class Game():
 		self.labels = []
 		self.castle = Castle(game=self)
 
-	def triggerBonus(self, bonus, player):
+	def triggerBonus(self, bonus, player, reward=None):
 		""" Execute bonus powers 捡到地图上的奖励 """
 		if self.play_sounds:
 			self.sounds["bonus"].play()
 
 		player.trophies["bonus"] += 1
 		player.score += 500  # 直接加分
-
+		if reward:
+			reward[0] += 30
 		if bonus.bonus == bonus.BONUS_GRENADE:   # 捡到手雷
 			for enemy in self.enemies:
 				enemy.explode()
+				if reward:
+					reward[0] += 20
 		elif bonus.bonus == bonus.BONUS_HELMET:  # 护甲
 			self.shieldPlayer(player, True, 10000)
 		elif bonus.bonus == bonus.BONUS_SHOVEL:  # 铲子
@@ -714,19 +717,20 @@ class Game():
 					enemy.update(time_passed)
 
 			if not self.game_over and self.active:
-				for player in self.players:
-					if player.state == player.STATE_ALIVE:
-						if player.bonus != None and player.side == player.SIDE_PLAYER:
-							self.triggerBonus(player.bonus, player)  # 有奖励的话现在就给，然后划掉
-							player.bonus = None
-					elif player.state == player.STATE_DEAD:
-						self.superpowers = 0
-						player.lives -= 1
-						reward -= 60
-						if player.lives > 0:
-							self.respawnPlayer(player)  # 还有命就复活，没命就结束游戏
-						else:
-							self.game_over = True
+				if player.state == player.STATE_ALIVE:
+					if player.bonus != None:
+						reward_buffer = [0]
+						self.triggerBonus(player.bonus, player, reward_buffer)  # 有奖励的话现在就给，然后划掉
+						player.bonus = None
+						reward += reward_buffer[0]
+				elif player.state == player.STATE_DEAD:
+					self.superpowers = 0
+					player.lives -= 1
+					reward -= 60
+					if player.lives > 0:
+						self.respawnPlayer(player)  # 还有命就复活，没命就结束游戏
+					else:
+						self.game_over = True
 
 			for bullet in self.bullets:  # 移除被标记为 REMOVED 的子弹
 				if bullet.state == bullet.STATE_REMOVED:
