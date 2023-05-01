@@ -691,11 +691,12 @@ class Game():
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
 		# 0: fire, 1~4: move, 5: idle
 
-		reward = -5
+		reward = -1
 		player = self.players[0]
 		if player.state == player.STATE_ALIVE:
 			if action == 0:
 				player.fire()
+				reward -= 2  # penalty on constant fire
 			elif action < 5:
 				player.pressed[action-1] = True
 
