@@ -692,7 +692,7 @@ class Game():
 
 		# 1/3 秒执行一次动作
 		for _ in range(10):
-			time_passed = self.clock.tick(30)  # framerate=30
+			time_passed = 33  # framerate=30
 			if player.state == player.STATE_ALIVE and not self.game_over and self.active:
 				if player.pressed[0] == True:
 					player.move(self.DIR_UP)
