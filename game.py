@@ -30,7 +30,8 @@ class Game():
 			pygame.mixer.pre_init(44100, -16, 1, 512)
 
 		pygame.init()
-		pygame.display.set_caption("Battle City")
+		if not self.robot:
+			pygame.display.set_caption("Battle City")
 
 		# size = width, height = 480, 416
 		size = width, height = 416, 416
@@ -53,7 +54,8 @@ class Game():
 		self.sprites = pygame.transform.scale(pygame.image.load("images/sprites.png"), [192, 224]) # tanks, effects
 		#screen.set_colorkey((0,138,104))
 
-		pygame.display.set_icon(self.sprites.subsurface(0, 0, 13*2, 13*2))  # Yellow Tank
+		if not self.robot:
+			pygame.display.set_icon(self.sprites.subsurface(0, 0, 13*2, 13*2))  # Yellow Tank
 
 		self.sounds = {}
 		if self.play_sounds:
