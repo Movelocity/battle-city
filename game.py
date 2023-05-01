@@ -668,7 +668,7 @@ class Game():
 		self.reloadPlayers()
 
 		self.timer_pool.add(3000, self.spawnEnemy) 
-		print("enemy spawning timer added")
+
 		self.game_over = False  # if True, start "game over" animation
 		self.running = True     # if False, game will end w/o "game over" bussiness
 		self.active = True      # if False, players won't be able to do anything
