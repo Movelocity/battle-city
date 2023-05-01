@@ -10,7 +10,7 @@
 
 Please ensure that pygame is installed in your environment.
 
-## Demostration
+## Demonstration
 ```
 # require cv2 to visualize the captured state
 python main.py
