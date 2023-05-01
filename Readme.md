@@ -2,6 +2,10 @@
 
 ![game home screen](/images/screens/demo.png)
 
+forked from
+* [galaamn/battle-city](https://github.com/galaamn/battle-city)
+* [softpedia.com](http://linux.softpedia.com/get/GAMES-ENTERTAINMENT/Arcade/BattleCity-Tanks-59571.shtml)
+* [code.google.com](https://code.google.com/archive/p/battle-city-tanks/)
 
 ## Controls
 - Player 1: * movement: up/left/down/right * fire: space

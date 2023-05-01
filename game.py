@@ -717,12 +717,12 @@ class Game():
 				for player in self.players:
 					if player.state == player.STATE_ALIVE:
 						if player.bonus != None and player.side == player.SIDE_PLAYER:
-							self.triggerBonus(bonus, player)  # 有奖励的话现在就给，然后划掉
+							self.triggerBonus(player.bonus, player)  # 有奖励的话现在就给，然后划掉
 							player.bonus = None
 					elif player.state == player.STATE_DEAD:
 						self.superpowers = 0
 						player.lives -= 1
-						reward -= 30
+						reward -= 60
 						if player.lives > 0:
 							self.respawnPlayer(player)  # 还有命就复活，没命就结束游戏
 						else:
@@ -733,7 +733,7 @@ class Game():
 					self.bullets.remove(bullet)
 				else:
 					if bullet.update():
-						reward += 20
+						reward += 50
 					
 			for bonus in self.bonuses:  # 移除超时的奖励
 				if bonus.active == False:
@@ -746,7 +746,7 @@ class Game():
 			if not self.game_over:
 				if not self.castle.active:  # 碉堡破了，游戏结束
 					self.game_over = True
-					reward -= 50
+					reward -= 100
 
 			self.timer_pool.update(time_passed)  # 计时器心跳
 
