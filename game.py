@@ -696,7 +696,6 @@ class Game():
 		if player.state == player.STATE_ALIVE:
 			if action == 0:
 				player.fire()
-				reward -= 2  # penalty on constant fire
 			elif action < 5:
 				player.pressed[action-1] = True
 
