@@ -756,7 +756,7 @@ class Game():
 			if not self.game_over:
 				if not self.castle.active:  # 碉堡破了，游戏结束
 					self.game_over = True
-					reward -= 100
+					reward -= 200
 
 			self.timer_pool.update(time_passed)  # 计时器心跳
 
