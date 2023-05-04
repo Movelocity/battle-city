@@ -629,7 +629,6 @@ class Game():
 		f.close()
 		return True
 
-
 	def finishLevel(self):
 		""" Finish current level
 		Show earned scores and advance to the next stage
@@ -648,6 +647,7 @@ class Game():
 		del self.enemies[:]
 		del self.bonuses[:]
 		self.castle.rebuild()
+		del self.labels[:]
 		del self.timer_pool.timers[:]
 
 		# load level
