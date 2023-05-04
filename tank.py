@@ -46,7 +46,6 @@ class Tank:
 		]
 		self.spawn_image = self.spawn_images[0]
 		self.spawn_index = 0
-		
 
 		if position != None:
 			self.rect = pygame.Rect(position, (26, 26))

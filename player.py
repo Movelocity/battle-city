@@ -47,6 +47,7 @@ class Player(Tank):
 		if self.paralised:  # 瘫痪
 			return
 
+		# speed: px per move, default is 2
 		if direction == self.DIR_UP:     # move player
 			new_position = [self.rect.left, self.rect.top - self.speed]
 			if new_position[1] < 0:
@@ -68,17 +69,17 @@ class Player(Tank):
 
 		# collisions with tiles
 		if player_rect.collidelist(self.level.obstacle_rects) != -1:
-			return
+			return  # ignore update
 
 		# collisions with other players
 		for player in self.game.players:
 			if player != self and player.state == player.STATE_ALIVE and player_rect.colliderect(player.rect) == True:
-				return
+				return  # ignore update
 
 		# collisions with enemies
 		for enemy in self.game.enemies:
 			if player_rect.colliderect(enemy.rect) == True:
-				return
+				return  # ignore update
 
 		# collisions with bonuses
 		for bonus in self.game.bonuses:

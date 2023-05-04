@@ -110,12 +110,12 @@ class Game():
 		player.trophies["bonus"] += 1
 		player.score += 500  # 直接加分
 		if reward:
-			reward[0] += 30
+			reward[0] += 100
 		if bonus.bonus == bonus.BONUS_GRENADE:   # 捡到手雷
 			for enemy in self.enemies:
 				enemy.explode()
 				if reward:
-					reward[0] += 20
+					reward[0] += 60
 		elif bonus.bonus == bonus.BONUS_HELMET:  # 护甲
 			self.shieldPlayer(player, True, 10000)
 		elif bonus.bonus == bonus.BONUS_SHOVEL:  # 铲子
@@ -743,7 +743,7 @@ class Game():
 					self.bullets.remove(bullet)
 				else:
 					if bullet.update():
-						reward += 50
+						reward += 100
 					
 			for bonus in self.bonuses:  # 移除超时的奖励
 				if bonus.active == False:
