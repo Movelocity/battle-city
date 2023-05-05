@@ -735,11 +735,11 @@ class Game():
 		self.game_over = False  # if True, start "game over" animation
 		self.running = True     # if False, game will end w/o "game over" bussiness
 		self.active = True      # if False, players won't be able to do anything
-		self.draw()
+		# self.draw()
 
-		pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
-		return self.screen_buffer.transpose((1,0,2))
-
+		# pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
+		# return self.screen_buffer.transpose((1,0,2))
+		return self.draw_feature()
 
 	def step(self, action:int):
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
