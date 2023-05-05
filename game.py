@@ -436,9 +436,63 @@ class Game():
 			self.screen.blit(self.im_game_over, [176, self.game_over_y]) # 176=(416-64)/2
 
 		# self.drawSidebar()
-
 		if not self.robot:
 			pygame.display.flip()  # Update the full display Surface to the screen
+
+	def draw_feature(self):
+		"""简化版绘图26*26(一维), 用于加速验证RL算法"""
+		screen = np.zeros((26, 26))
+		for tile in self.level.mapr:
+			x, y = tile.topleft
+			col, row = int(round(x/16)), int(round(y/16))
+			if tile.type == self.level.TILE_BRICK:
+				screen[row, col] = 3
+			elif tile.type == self.level.TILE_STEEL:
+				screen[row, col] = 4
+			elif tile.type == self.level.TILE_WATER:
+				screen[row, col] = 5
+
+		for e in self.enemies:
+			self.draw_tank_tile(screen, e, fill=2)
+
+		for p in self.players:
+			self.draw_tank_tile(screen, p, fill=1)
+
+		for b in self.bullets:  # 子弹动的比较多，坐标容易跑出去
+			x, y = b.rect.topleft
+			col, row = int(round(x/16)), int(round(y/16))
+			if b.direction == b.DIR_UP:
+				self.safe_update(screen, row, col, 1.8)
+				self.safe_update(screen, row, col+1, 2.4)
+			elif b.direction == b.DIR_RIGHT:
+				self.safe_update(screen, row, col, 1.8)
+				self.safe_update(screen, row+1, col, 2.4)
+			elif b.direction == b.DIR_DOWN:
+				self.safe_update(screen, row, col, 2.4)
+				self.safe_update(screen, row, col+1, 1.8)
+			elif b.direction == b.DIR_LEFT:
+				self.safe_update(screen, row, col, 2.4)
+				self.safe_update(screen, row+1, col, 1.8)
+		return screen
+	
+	def safe_update(self, screen, x, y, value):
+		x, y = max(x, 0), max(y, 0)
+		x, y = min(x, 25), min(y, 25)
+		screen[x, y] = value
+
+	def draw_tank_tile(self, screen, tank, fill=1):
+		x, y = tank.rect.topleft
+		col, row = int(round(x/16)), int(round(y/16))
+		if tank.direction == tank.DIR_UP:
+			a, b, c, d = fill*1.1, fill*1.1, fill, fill
+		elif tank.direction == tank.DIR_RIGHT:
+			a, b, c, d = fill, fill*1.1, fill, fill*1.1
+		elif tank.direction == tank.DIR_DOWN:
+			a, b, c, d = fill, fill, fill*1.1, fill*1.1
+		elif tank.direction == tank.DIR_LEFT:
+			a, b, c, d = fill*1.1, fill, fill*1.1, fill
+		screen[row, col], screen[row, col+1] = a, b
+		screen[row+1, col], screen[row+1, col+1] = c, d
 
 	def drawSidebar(self):
 		x = 416
@@ -639,7 +693,7 @@ class Game():
 		self.active = False
 		self.timer_pool.add(3000, self.showScores, 1)
 
-		print("Stage "+str(self.stage)+" completed")
+		print(f"Stage {self.stage} completed!!!")
 
 	def reset(self, stage=None):
 		""" Start next level. 下面会进入while循环 """
@@ -761,12 +815,12 @@ class Game():
 			self.timer_pool.update(time_passed)  # 计时器心跳
 
 		player.pressed = [False] * 4
-		self.draw()
-		pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
+		# self.draw()
+		# pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
 		done = self.game_over or not self.active
-		# print(self.screen_buffer.shape)
-		# print(self.screen_buffer.dtype)
-		return self.screen_buffer.transpose((1,0,2)), reward, done
+
+		# return self.screen_buffer.transpose((1,0,2)), reward, done
+		return self.draw_feature(), reward, done
 
 	def nextLevel(self):
 		""" Start next level. 下面会进入while循环 """

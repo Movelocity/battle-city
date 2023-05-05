@@ -36,12 +36,11 @@ class Level():
 			self.TILE_FROZE: game.sprites.subsurface(64*2, 72*2, 8*2, 8*2)
 		}
 
-		self.obstacle_rects = []
 		self.loadLevel(level_nr)
 		self.obstacle_rects = []    # tiles' rects on map, tanks cannot move over
 		self.updateObstacleRects()  # update these tiles
 
-		self.game.timer_pool.add(400, lambda :self.toggleWaves())
+		# self.game.timer_pool.add(400, lambda :self.toggleWaves())  暂时取消河流动效，后面要再加回来
 
 	def hitTile(self, pos, power=1, sound=False):
 		"""

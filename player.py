@@ -47,7 +47,7 @@ class Player(Tank):
 		if self.paralised:  # 瘫痪
 			return
 
-		# speed: px per move, default is 2
+		# speed: px per move, default = 2
 		if direction == self.DIR_UP:     # move player
 			new_position = [self.rect.left, self.rect.top - self.speed]
 			if new_position[1] < 0:
