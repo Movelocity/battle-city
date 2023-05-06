@@ -753,66 +753,64 @@ class Game():
 			elif action < 5:
 				player.pressed[action-1] = True
 
-		# 1/3 秒执行一次动作
-		for _ in range(10):
-			time_passed = 33  # framerate=30
-			if player.state == player.STATE_ALIVE and not self.game_over and self.active:
-				if player.pressed[0] == True:
-					player.move(self.DIR_UP)
-				elif player.pressed[1] == True:
-					player.move(self.DIR_RIGHT)
-				elif player.pressed[2] == True:
-					player.move(self.DIR_DOWN)
-				elif player.pressed[3] == True:
-					player.move(self.DIR_LEFT)
-			player.update(time_passed)
+		time_passed = 33  # framerate=30
+		if player.state == player.STATE_ALIVE and not self.game_over and self.active:
+			if player.pressed[0] == True:
+				player.move(self.DIR_UP)
+			elif player.pressed[1] == True:
+				player.move(self.DIR_RIGHT)
+			elif player.pressed[2] == True:
+				player.move(self.DIR_DOWN)
+			elif player.pressed[3] == True:
+				player.move(self.DIR_LEFT)
+		player.update(time_passed)
 
-			for enemy in self.enemies:
-				if enemy.state == enemy.STATE_DEAD and not self.game_over and self.active:
-					self.enemies.remove(enemy)
-					if len(self.level.enemies_left) == 0 and len(self.enemies) == 0:
-						self.active = False
-						print("Stage "+str(self.stage)+" completed")
+		for enemy in self.enemies:
+			if enemy.state == enemy.STATE_DEAD and not self.game_over and self.active:
+				self.enemies.remove(enemy)
+				if len(self.level.enemies_left) == 0 and len(self.enemies) == 0:
+					self.active = False
+					print("Stage "+str(self.stage)+" completed")
+			else:
+				enemy.update(time_passed)
+
+		if not self.game_over and self.active:
+			if player.state == player.STATE_ALIVE:
+				if player.bonus != None:
+					reward_buffer = [0]
+					self.triggerBonus(player.bonus, player, reward_buffer)  # 有奖励的话现在就给，然后划掉
+					player.bonus = None
+					reward += reward_buffer[0]
+			elif player.state == player.STATE_DEAD:
+				self.superpowers = 0
+				player.lives -= 1
+				reward -= 60
+				if player.lives > 0:
+					self.respawnPlayer(player)  # 还有命就复活，没命就结束游戏
 				else:
-					enemy.update(time_passed)
-
-			if not self.game_over and self.active:
-				if player.state == player.STATE_ALIVE:
-					if player.bonus != None:
-						reward_buffer = [0]
-						self.triggerBonus(player.bonus, player, reward_buffer)  # 有奖励的话现在就给，然后划掉
-						player.bonus = None
-						reward += reward_buffer[0]
-				elif player.state == player.STATE_DEAD:
-					self.superpowers = 0
-					player.lives -= 1
-					reward -= 60
-					if player.lives > 0:
-						self.respawnPlayer(player)  # 还有命就复活，没命就结束游戏
-					else:
-						self.game_over = True
-
-			for bullet in self.bullets:  # 移除被标记为 REMOVED 的子弹
-				if bullet.state == bullet.STATE_REMOVED:
-					self.bullets.remove(bullet)
-				else:
-					if bullet.update():
-						reward += 100
-					
-			for bonus in self.bonuses:  # 移除超时的奖励
-				if bonus.active == False:
-					self.bonuses.remove(bonus)
-
-			for label in self.labels:  # 移除超时的文字
-				if not label.active:
-					self.labels.remove(label)
-
-			if not self.game_over:
-				if not self.castle.active:  # 碉堡破了，游戏结束
 					self.game_over = True
-					reward -= 200
 
-			self.timer_pool.update(time_passed)  # 计时器心跳
+		for bullet in self.bullets:  # 移除被标记为 REMOVED 的子弹
+			if bullet.state == bullet.STATE_REMOVED:
+				self.bullets.remove(bullet)
+			else:
+				if bullet.update():
+					reward += 100
+				
+		for bonus in self.bonuses:  # 移除超时的奖励
+			if bonus.active == False:
+				self.bonuses.remove(bonus)
+
+		for label in self.labels:  # 移除超时的文字
+			if not label.active:
+				self.labels.remove(label)
+
+		if not self.game_over:
+			if not self.castle.active:  # 碉堡破了，游戏结束
+				self.game_over = True
+				reward -= 200
+
+		self.timer_pool.update(time_passed)  # 计时器心跳
 
 		player.pressed = [False] * 4
 		# self.draw()
