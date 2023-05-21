@@ -820,7 +820,13 @@ class Game():
 		done = self.game_over or not self.active
 
 		# return self.screen_buffer.transpose((1,0,2)), reward, done
-		return self.draw_feature(), reward, done
+		if self.render_mode == "grid":
+			return self.draw_feature(), reward, done
+		else:
+			self.draw()
+			pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
+			return self.screen_buffer.transpose((1,0,2)), reward, done
+
 
 	def nextLevel(self):
 		""" Start next level. 下面会进入while循环 """
