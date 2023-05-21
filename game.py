@@ -13,15 +13,16 @@ from utils import Timer
 
 
 class Game():
-	# direction constants
 	(DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
 	TILE_SIZE = 16
 
-	def __init__(self, robot=True, full_screen=False):
+	def __init__(self, robot=True, full_screen=False, render_mode="rgb"):
+		# render_mode: rgb, grid
 		self.play_sounds = False
 		self.sprites = None
 		self.timer_pool = Timer()
 		self.robot = robot
+		self.render_mode = render_mode
 
 		# center window
 		os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
@@ -193,9 +194,7 @@ class Game():
 			for sound in self.sounds:
 				self.sounds[sound].stop()
 			self.sounds["end"].play()
-
 		self.game_over_y = 416+40
-
 		self.game_over = True
 		self.timer_pool.add(3000, self.showScores, 1)
 
@@ -225,10 +224,10 @@ class Game():
 		Redraw screen only when up or down key is pressed. When enter is pressed,
 		exit from this screen and start the game with selected number of players
 		"""
-		self.running = False   # stop game main loop (if any)
+		self.running = False            # stop game main loop (if any)
 		del self.timer_pool.timers[:]   # clear all timers
 		del self.players[:]
-		self.stage = 0         # set current stage to 0
+		self.stage = 0                  # set current stage to 0
 		self.animateIntroScreen()
 
 		main_loop = True
@@ -481,6 +480,7 @@ class Game():
 		screen[x, y] = value
 
 	def draw_tank_tile(self, screen, tank, fill=1):
+		# 白框
 		x, y = tank.rect.topleft
 		col, row = int(round(x/16)), int(round(y/16))
 		if tank.direction == tank.DIR_UP:
@@ -735,11 +735,13 @@ class Game():
 		self.game_over = False  # if True, start "game over" animation
 		self.running = True     # if False, game will end w/o "game over" bussiness
 		self.active = True      # if False, players won't be able to do anything
-		# self.draw()
 
-		# pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
-		# return self.screen_buffer.transpose((1,0,2))
-		return self.draw_feature()
+		if self.render_mode == "grid":
+			return self.draw_feature()
+		else:
+			self.draw()
+			pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
+			return self.screen_buffer.transpose((1,0,2)) # "rgb"
 
 	def step(self, action:int):
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
