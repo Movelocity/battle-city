@@ -42,23 +42,19 @@ class Level():
 
 		# self.game.timer_pool.add(400, lambda :self.toggleWaves())  暂时取消河流动效，后面要再加回来
 
-	def hitTile(self, pos, power=1, sound=False):
+	def hitTile(self, pos, power=1):
 		"""
 			如果子弹停下, 返回 True。否则返回 False, 表示遇到河流、草块等非碰撞方块
-			@param: pos Tile's x, y in px, 子弹等级, 是否播放音效
+			@param: pos Tile's x, y in px, 子弹等级
 			@return: True if bullet was stopped, False otherwise
 		"""
 		for tile in self.mapr:
 			if tile.topleft == pos:
 				if tile.type == self.TILE_BRICK:
-					if self.game.play_sounds and sound:
-						self.game.sounds["brick"].play()
 					self.mapr.remove(tile)
 					self.updateObstacleRects()
 					return True
 				elif tile.type == self.TILE_STEEL:
-					if self.game.play_sounds and sound:
-						self.game.sounds["steel"].play()
 					if power == 2:  # 强子弹击穿铁块
 						self.mapr.remove(tile)
 						self.updateObstacleRects()

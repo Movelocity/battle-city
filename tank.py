@@ -205,9 +205,6 @@ class Tank:
 					tank.trophies["enemy"+str(self.type)] += 1
 					points = (self.type+1) * 100
 					tank.score += points
-					if self.game.play_sounds:
-						self.game.sounds["explosion"].play()
-
 					self.game.labels.append(Label(self.game, self.rect.topleft, str(points), 500))
 
 				self.explode()

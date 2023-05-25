@@ -12,9 +12,11 @@ if __name__ == "__main__":
 	game.reset()
 	for i in range(9999):
 		action = random.randint(0,5)
-		state, reward, done = game.step(action)
+		for _ in range(6):
+			state, reward, done, truncated = game.step(action)
 		cv2.imshow('game', cv2.cvtColor(state, cv2.COLOR_RGB2BGR))
-		print(f"action: {action}, reward:{reward}")
+
+		print(f"action: {action}, reward:{reward}, done: {done}, lives: {game.players[0].lives}")
 		if done: break
 		c = cv2.waitKey(1)
 		if c==ord('q') or c==ord('c'):
