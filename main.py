@@ -3,6 +3,7 @@
 from game import Game
 import random
 import cv2
+import time 
 
 if __name__ == "__main__":
 	cv2.startWindowThread()
@@ -18,7 +19,8 @@ if __name__ == "__main__":
 
 		print(f"action: {action}, reward:{reward}, done: {done}, lives: {game.players[0].lives}")
 		if done: break
-		c = cv2.waitKey(1)
+		
+		c = cv2.waitKey(33*6)
 		if c==ord('q') or c==ord('c'):
 			print('break')
 			cv2.destroyAllWindows()

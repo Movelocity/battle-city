@@ -111,7 +111,7 @@ class Tank:
 
 	def fire(self, forced=False):
 		""" Shoot a bullet 创建一个子弹
-		@param boolean forced.(是否强制发射子弹) If false, check whether tank has exceeded his bullet quota. Default: False
+		@param boolean forced.(是否无限制发射子弹) If false, check whether tank has exceeded his bullet quota. Default: False
 		@return boolean True if bullet was fired, false otherwise
 		"""
 		if self.state != self.STATE_ALIVE:

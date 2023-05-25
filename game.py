@@ -7,7 +7,8 @@ from tank import Tank
 from enemy import Enemy
 from player import Player
 from level import Level
-from utils import Timer
+from bullet import Bullet
+import utils
 
 class Game():
 	(DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
@@ -25,9 +26,9 @@ class Game():
 	)
 
 	def __init__(self, robot=True, full_screen=False, render_mode="rgb"):
-		# render_mode: rgb, grid
+		# render_mode: rgb, grid, feature
 		self.sprites = None
-		self.timer_pool = Timer()
+		self.timer_pool = utils.Timer()
 		self.robot = robot
 		self.render_mode = render_mode
 		size = width, height = 416, 416
@@ -191,11 +192,28 @@ class Game():
 		x, y = min(x, 25), min(y, 25)
 		screen[x, y] = value
 
+	def draw_tank_tile(self, screen, tank, fill=1):
+		# for simple render mode
+		x, y = tank.rect.topleft
+		col, row = int(round(x/16)), int(round(y/16))
+		if tank.direction == tank.DIR_UP:
+			a, b, c, d = fill*1.1, fill*1.1, fill, fill
+		elif tank.direction == tank.DIR_RIGHT:
+			a, b, c, d = fill, fill*1.1, fill, fill*1.1
+		elif tank.direction == tank.DIR_DOWN:
+			a, b, c, d = fill, fill, fill*1.1, fill*1.1
+		elif tank.direction == tank.DIR_LEFT:
+			a, b, c, d = fill*1.1, fill, fill*1.1, fill
+		screen[row, col], screen[row, col+1] = a, b
+		screen[row+1, col], screen[row+1, col+1] = c, d
+
 	def simple_render(self):
 		"""简化版绘图26*26(一维), 用于加速验证RL算法"""
 		screen = np.zeros((26, 26))
 		for tile in self.level.mapr:
 			x, y = tile.topleft
+			# 方块以16像素为单位
+			# type: value, 砖: 3, 铁: 4, 水: 5
 			col, row = int(round(x/16)), int(round(y/16))
 			if tile.type == self.level.TILE_BRICK:
 				screen[row, col] = 3
@@ -232,53 +250,31 @@ class Game():
 		pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
 		return self.screen_buffer.transpose((1,0,2)) # "rgb"
 
-	def draw_tank_tile(self, screen, tank, fill=1):
-		# 白框
-		x, y = tank.rect.topleft
-		col, row = int(round(x/16)), int(round(y/16))
-		if tank.direction == tank.DIR_UP:
-			a, b, c, d = fill*1.1, fill*1.1, fill, fill
-		elif tank.direction == tank.DIR_RIGHT:
-			a, b, c, d = fill, fill*1.1, fill, fill*1.1
-		elif tank.direction == tank.DIR_DOWN:
-			a, b, c, d = fill, fill, fill*1.1, fill*1.1
-		elif tank.direction == tank.DIR_LEFT:
-			a, b, c, d = fill*1.1, fill, fill*1.1, fill
-		screen[row, col], screen[row, col+1] = a, b
-		screen[row+1, col], screen[row+1, col+1] = c, d
+	def feature(self):
+		player = self.players[0]
+		direction = player.direction
+		p_bullet_pos = [[0, 0]]
+		can_fire = True
+		e_bullets = []
+		for b in self.bullets:
+			if b.owner_side == Bullet.OWNER_ENEMY:
+				e_bullets.append(b)
+			elif b.owner == player and b.state == Bullet.STATE_ACTIVE:
+				can_fire = False
+				p_bullet_pos = utils.get_relative_polar_coordinates(
+					player.rect.topleft, [b.rect.topleft])
 
-	def drawSidebar(self):
-		x = 416
-		y = 0
-		self.screen.fill([100, 100, 100], pygame.Rect([416, 0], [64, 416]))
+		enemy_polars = utils.get_relative_polar_coordinates(
+			player.rect.topleft, [e.rect.topleft for e in self.enemies], required_size=4)
+		e_bullet_polars = utils.get_relative_polar_coordinates(
+			player.rect.topleft, [b.rect.topleft for b in e_bullets], required_size=4)
+		castle_ploar = utils.get_relative_polar_coordinates(
+			player.rect.topleft, [self.castle.rect.topleft])
 
-		xpos = x + 16
-		ypos = y + 16
-
-		# draw enemy lives
-		for n in range(len(self.level.enemies_left) + len(self.enemies)):
-			self.screen.blit(self.enemy_life_image, [xpos, ypos])
-			if n % 2 == 1:
-				xpos = x + 16
-				ypos+= 17
-			else:
-				xpos += 17
-
-		# players' lives
-		if pygame.font.get_init():
-			text_color = pygame.Color('black')
-			for n in range(len(self.players)):
-				if n == 0:
-					self.screen.blit(self.font.render(str(n+1)+"P", False, text_color), [x+16, y+200])
-					self.screen.blit(self.font.render(str(self.players[n].lives), False, text_color), [x+31, y+215])
-					self.screen.blit(self.player_life_image, [x+17, y+215])
-				else:
-					self.screen.blit(self.font.render(str(n+1)+"P", False, text_color), [x+16, y+240])
-					self.screen.blit(self.font.render(str(self.players[n].lives), False, text_color), [x+31, y+255])
-					self.screen.blit(self.player_life_image, [x+17, y+255])
-
-			self.screen.blit(self.flag_image, [x+17, y+280])
-			self.screen.blit(self.font.render(str(self.stage), False, text_color), [x+17, y+312])
+		result = [direction, can_fire] + p_bullet_pos[0] +\
+			[p[0] for p in enemy_polars] + [p[0] for p in e_bullet_polars] + \
+			[p[1] for p in enemy_polars] + [p[1] for p in e_bullet_polars] + castle_ploar[0]
+		return np.array(result)
 
 	def toggleEnemyFreeze(self, freeze=True):
 		""" Freeze/defreeze all enemies """
@@ -316,6 +312,8 @@ class Game():
 
 		if self.render_mode == "grid":
 			return self.simple_render()
+		elif self.render_mode == "feature":
+			return self.feature()
 		else:
 			return self.render()
 
@@ -360,7 +358,6 @@ class Game():
 					player.bonus = None
 					reward += reward_buffer[0]
 			elif player.state == player.STATE_DEAD:
-				print("player dies")
 				self.superpowers = 0
 				player.lives -= 1
 				reward -= 60
@@ -387,7 +384,6 @@ class Game():
 		if not self.game_over:
 			if not self.castle.active:  # 碉堡破了，游戏结束
 				# self.game_over = True
-				print("castel explodes")
 				reward -= 10
 
 		self.timer_pool.update(time_passed)  # 计时器心跳
@@ -400,5 +396,7 @@ class Game():
 		# return self.screen_buffer.transpose((1,0,2)), reward, done
 		if self.render_mode == "grid":
 			return self.simple_render(), reward, done, truncated
+		elif self.render_mode == "feature":
+			return self.feature(), reward, done, truncated
 		else:
 			return self.render(), reward, done, truncated

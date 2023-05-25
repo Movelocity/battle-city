@@ -57,3 +57,27 @@ class Timer(object):
 			# 		pass
 
 
+import cmath
+
+def cartesian_to_polar(x, y):
+	"""Convert cartesian coordinates to polar coordinates."""
+	r = abs(complex(x, y))
+	phi = cmath.phase(complex(x, y))
+	return r, phi
+
+def get_relative_polar_coordinates(a, b, required_size=None, normalize=True):
+	"""Calculate the relative polar coordinates of b with respect to a."""
+	width, height = 416, 416
+	polar_coordinates = []
+	for point in b:
+		x, y = point[0], point[1]
+		dx, dy = x-a[0], y-a[1]
+		if normalize:
+			dx /= width
+			dy /= height
+		r, phi = cartesian_to_polar(dx, dy)
+		polar_coordinates.append([r, phi])
+	if required_size is not None:
+		while len(polar_coordinates)<required_size:
+			polar_coordinates.append([0, 0])
+	return polar_coordinates
