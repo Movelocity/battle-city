@@ -321,7 +321,7 @@ class Game():
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
 		# 0: fire, 1~4: move, 5: idle
 
-		reward = -1
+		reward = -0.1
 		player = self.players[0]
 		if player.state == player.STATE_ALIVE:
 			if action == 0:
@@ -383,8 +383,8 @@ class Game():
 
 		if not self.game_over:
 			if not self.castle.active:  # 碉堡破了，游戏结束
-				# self.game_over = True
-				reward -= 10
+				self.game_over = True
+				reward -= 100
 
 		self.timer_pool.update(time_passed)  # 计时器心跳
 
