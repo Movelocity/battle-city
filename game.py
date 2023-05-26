@@ -313,9 +313,9 @@ class Game():
 		if self.render_mode == "grid":
 			return self.simple_render()
 		elif self.render_mode == "feature":
-			return self.feature()
+			return self.feature(), {}
 		else:
-			return self.render()
+			return self.render(), {}
 
 	def step(self, action:int):
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
@@ -395,8 +395,8 @@ class Game():
 		truncated = not self.active
 		# return self.screen_buffer.transpose((1,0,2)), reward, done
 		if self.render_mode == "grid":
-			return self.simple_render(), reward, done, truncated
+			return self.simple_render(), reward, done, truncated, {}
 		elif self.render_mode == "feature":
-			return self.feature(), reward, done, truncated
+			return self.feature(), reward, done, truncated, {}
 		else:
-			return self.render(), reward, done, truncated
+			return self.render(), reward, done, truncated, {}
