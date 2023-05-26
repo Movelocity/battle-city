@@ -311,7 +311,7 @@ class Game():
 		self.active = True      # if False, players won't be able to do anything
 
 		if self.render_mode == "grid":
-			return self.simple_render()
+			return self.simple_render(), {}
 		elif self.render_mode == "feature":
 			return self.feature(), {}
 		else:
