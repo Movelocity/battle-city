@@ -252,7 +252,7 @@ class Game():
 
 	def feature(self):
 		player = self.players[0]
-		direction = np.zeros(4)
+		direction = [0] *4
 		direction[player.direction] = 1
 		p_bullet_pos = [[0, 0]]
 		can_fire = True
