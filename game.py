@@ -252,7 +252,8 @@ class Game():
 
 	def feature(self):
 		player = self.players[0]
-		direction = player.direction
+		direction = np.zeros(4)
+		direction[player.direction] = 1
 		p_bullet_pos = [[0, 0]]
 		can_fire = True
 		e_bullets = []
@@ -271,7 +272,7 @@ class Game():
 		castle_ploar = utils.get_relative_polar_coordinates(
 			player.rect.topleft, [self.castle.rect.topleft])
 
-		result = [direction, can_fire] + p_bullet_pos[0] +\
+		result = [can_fire] + direction + p_bullet_pos[0] +\
 			[p[0] for p in enemy_polars] + [p[0] for p in e_bullet_polars] + \
 			[p[1] for p in enemy_polars] + [p[1] for p in e_bullet_polars] + castle_ploar[0]
 		return np.array(result)
