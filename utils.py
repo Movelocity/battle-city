@@ -80,4 +80,6 @@ def get_relative_polar_coordinates(a, b, required_size=None, normalize=True):
 	if required_size is not None:
 		while len(polar_coordinates)<required_size:
 			polar_coordinates.append([0, 0])
+		if len(polar_coordinates)>required_size:
+			polar_coordinates = polar_coordinates[:required_size]
 	return polar_coordinates
