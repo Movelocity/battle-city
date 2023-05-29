@@ -12,7 +12,6 @@ class Castle:
 		self.img_destroyed = self.game.sprites.subsurface(16*2, 15*2, 16*2, 16*2)
 		self.rect = pygame.Rect(12*16, 24*16, 32, 32)  # init position
 		self.rebuild()  # start with undamaged and shiny castle
-		self.lives = 2
 
 	def draw(self):
 		""" Draw castle """
@@ -36,6 +35,4 @@ class Castle:
 		self.state = self.STATE_EXPLODING
 		self.explosion = Explosion(self.game, self.rect.topleft)
 		self.image = self.img_destroyed
-		self.lives -= 1
-		if self.lives <= 0:
-			self.active = False
+		self.active = False

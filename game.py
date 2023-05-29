@@ -32,6 +32,7 @@ class Game():
 		self.robot = robot
 		self.render_mode = render_mode
 		size = width, height = 416, 416
+		self.size = size
 
 		pygame.init()
 
@@ -43,10 +44,8 @@ class Game():
 			# size = width, height = 480, 416
 			os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'  # center window
 			pygame.display.set_caption("Battle City")
-			if full_screen:
-				self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-			else:
-				self.screen = pygame.display.set_mode(size)
+			# self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)  # FULL SCREEN mode if needed
+			self.screen = pygame.display.set_mode(size)
 			pygame.display.set_icon(self.sprites.subsurface(0, 0, 13*2, 13*2))  # Yellow Tank
 
 		self.screen_buffer = np.zeros((width, height, 3), dtype=np.uint8)
@@ -197,52 +196,63 @@ class Game():
 		x, y = tank.rect.topleft
 		col, row = int(round(x/16)), int(round(y/16))
 		if tank.direction == tank.DIR_UP:
-			a, b, c, d = fill*1.1, fill*1.1, fill, fill
+			a, b, c, d = fill+1, fill+1, fill, fill
 		elif tank.direction == tank.DIR_RIGHT:
-			a, b, c, d = fill, fill*1.1, fill, fill*1.1
+			a, b, c, d = fill, fill+1, fill, fill+1
 		elif tank.direction == tank.DIR_DOWN:
-			a, b, c, d = fill, fill, fill*1.1, fill*1.1
+			a, b, c, d = fill, fill, fill+1, fill+1
 		elif tank.direction == tank.DIR_LEFT:
-			a, b, c, d = fill*1.1, fill, fill*1.1, fill
+			a, b, c, d = fill+1, fill, fill+1, fill
 		screen[row, col], screen[row, col+1] = a, b
 		screen[row+1, col], screen[row+1, col+1] = c, d
 
 	def simple_render(self):
 		"""简化版绘图26*26(一维), 用于加速验证RL算法"""
-		screen = np.zeros((26, 26))
+		# GROUND = 0
+		PLAYER_HEAD, ENEMY_HEAD = 120, 90
+		# type: value, 砖: 5, 铁: 6, 水: 7
+		BRICK, STEEL, WATER = 21, 26, 30
+		PLAYER_BULLET_1, PLAYER_BULLET_2 = 244, 245
+		ENEMY_BULLET_1, ENEMY_BULLET_2 = 254, 255
+		# MAX = 255
+
+		screen = np.zeros((26, 26), dtype=np.uint8)
 		for tile in self.level.mapr:
 			x, y = tile.topleft
 			# 方块以16像素为单位
-			# type: value, 砖: 3, 铁: 4, 水: 5
 			col, row = int(round(x/16)), int(round(y/16))
 			if tile.type == self.level.TILE_BRICK:
-				screen[row, col] = 3
+				screen[row, col] = BRICK
 			elif tile.type == self.level.TILE_STEEL:
-				screen[row, col] = 4
+				screen[row, col] = STEEL
 			elif tile.type == self.level.TILE_WATER:
-				screen[row, col] = 5
+				screen[row, col] = WATER
 
 		for e in self.enemies:
-			self.draw_tank_tile(screen, e, fill=2)
+			self.draw_tank_tile(screen, e, fill=ENEMY_HEAD)
 
 		for p in self.players:
-			self.draw_tank_tile(screen, p, fill=1)
+			self.draw_tank_tile(screen, p, fill=PLAYER_HEAD)
 
 		for b in self.bullets:  # 子弹动的比较多，坐标容易跑出去
 			x, y = b.rect.topleft
+			if b.owner_side == Bullet.OWNER_PLAYER:
+				t1, t2 = PLAYER_BULLET_1, PLAYER_BULLET_2
+			else:
+				t1, t2 = ENEMY_BULLET_1, ENEMY_BULLET_2
 			col, row = int(round(x/16)), int(round(y/16))
 			if b.direction == b.DIR_UP:
-				self.safe_update(screen, row, col, 1.8)
-				self.safe_update(screen, row, col+1, 2.4)
+				self.safe_update(screen, row, col, t1)
+				self.safe_update(screen, row, col+1, t2)
 			elif b.direction == b.DIR_RIGHT:
-				self.safe_update(screen, row, col, 1.8)
-				self.safe_update(screen, row+1, col, 2.4)
+				self.safe_update(screen, row, col, t1)
+				self.safe_update(screen, row+1, col, t2)
 			elif b.direction == b.DIR_DOWN:
-				self.safe_update(screen, row, col, 2.4)
-				self.safe_update(screen, row, col+1, 1.8)
+				self.safe_update(screen, row, col, t1)
+				self.safe_update(screen, row, col+1, t2)
 			elif b.direction == b.DIR_LEFT:
-				self.safe_update(screen, row, col, 2.4)
-				self.safe_update(screen, row+1, col, 1.8)
+				self.safe_update(screen, row, col, t2)
+				self.safe_update(screen, row+1, col, t1)
 		return screen
 
 	def render(self):
@@ -318,27 +328,23 @@ class Game():
 		else:
 			return self.render(), {}
 
-	def step(self, action:int):
+	def step(self, action:int, time_passed=33):
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
 		# 0: fire, 1~4: move, 5: idle
+		# framerate=30
 
 		reward = -0.1
 		player = self.players[0]
-		if player.state == player.STATE_ALIVE:
+		if player.state == player.STATE_ALIVE and not self.game_over and self.active:
 			if action == 0:
 				player.fire()
-			elif action < 5:
-				player.pressed[action-1] = True
-
-		time_passed = 33  # framerate=30
-		if player.state == player.STATE_ALIVE and not self.game_over and self.active:
-			if player.pressed[0] == True:
+			elif action == 1:
 				player.move(self.DIR_UP)
-			elif player.pressed[1] == True:
+			elif action == 2:
 				player.move(self.DIR_RIGHT)
-			elif player.pressed[2] == True:
+			elif action == 3:
 				player.move(self.DIR_DOWN)
-			elif player.pressed[3] == True:
+			elif action == 4:
 				player.move(self.DIR_LEFT)
 		player.update(time_passed)
 
@@ -389,7 +395,6 @@ class Game():
 
 		self.timer_pool.update(time_passed)  # 计时器心跳
 
-		player.pressed = [False] * 4
 		# self.draw()
 		# pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
 		done = self.game_over 
@@ -401,3 +406,77 @@ class Game():
 			return self.feature(), reward, done, truncated, {}
 		else:
 			return self.render(), reward, done, truncated, {}
+
+	def save_record(self, stage, states, actions):
+		import h5py
+		assert len(states) == len(actions), f"length of data does not match: {len(states)}, {len(actions)}"
+		filename = f"./game_cache/tank-{stage}-{len(states)}.h5"
+		with h5py.File(filename, 'w') as f:
+			f.create_dataset('states', data=np.array(states, dtype=np.uint8), compression='gzip')
+			f.create_dataset('actions', data=np.array(actions, dtype=np.uint8), compression='gzip')
+		print(f"{len(states)} states saved to {filename}")
+	
+	def load_record(self, dirname="./game_cache", prefix="tank-"):
+		filenames = [f for f in os.listdir(dirname) if f.startswith(prefix)]
+		states, actions = [], []
+		for filename in filenames:
+			with h5py.File(filename, 'r') as f:
+				states_ = np.array(f['states'], dtype=np.uint8)
+				actions_ = np.array(f['actions'])
+			states.append(states_)
+			actions.append(actions_)
+		return states, actions
+
+	def play(self):
+		assert self.robot == False, "user_mode requires an Game object with robot=False"
+
+		states, actions = [], []
+		self.reset()  # 第一帧丢弃
+		self.draw()
+		active = True
+		fire = False
+		player = self.players[0]
+		while active:
+			time_passed = self.clock.tick(30)
+			for event in pygame.event.get():
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_q:  # 按 Q 退出
+						active = False
+					try:
+						index = player.controls.index(event.key)
+						if index == 0:
+							fire = True
+						elif index >0:
+							player.pressed[index-1] = True
+					except:
+						pass
+				elif event.type == pygame.KEYUP:
+					try:
+						index = player.controls.index(event.key)
+						if index > 0:
+							player.pressed[index-1] = False
+					except:
+						pass
+			if fire:
+				action = 0
+				fire = False
+			elif player.pressed[0] == True:
+				action = 1
+			elif player.pressed[1] == True:
+				action = 2
+			elif player.pressed[2] == True:
+				action = 3
+			elif player.pressed[3] == True:
+				action = 4
+			else:
+				action = 5
+
+			state, reward, done, truncated, info = self.step(action, time_passed=time_passed)
+			if not self.active:
+				self.reset()
+			states.append(state)
+			actions.append(action)
+			self.draw()
+		self.save_record(self.stage, states, actions)
+
+

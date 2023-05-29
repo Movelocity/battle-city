@@ -31,7 +31,7 @@ class Tank:
 		self.superpowers = 0
 
 		# navigation keys: fire, up, right, down, left
-		self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
+		self.controls = [pygame.K_j, pygame.K_w, pygame.K_d, pygame.K_s, pygame.K_a]
 		self.pressed = [False] * 4  # currently pressed buttons (navigation only)
 
 		self.shield_images = [
