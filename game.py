@@ -423,8 +423,8 @@ class Game():
 			with h5py.File(filename, 'r') as f:
 				states_ = np.array(f['states'], dtype=np.uint8)
 				actions_ = np.array(f['actions'])
-			states.append(states_)
-			actions.append(actions_)
+			states.extend(states_)
+			actions.extend(actions_)
 		return states, actions
 
 	def play(self):

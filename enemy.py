@@ -37,7 +37,6 @@ class Enemy(Tank):
 
 		image_rects = [
 			(32*2, 0, 13*2, 15*2),
-			(32*2, 0, 13*2, 15*2),
 			(48*2, 0, 13*2, 15*2),
 			(64*2, 0, 13*2, 15*2),
 			(80*2, 0, 13*2, 15*2),
@@ -47,11 +46,11 @@ class Enemy(Tank):
 			(80*2, 16*2, 13*2, 15*2)
 		]
 		# game.sprites.subsurface
-		self.image = game.sprites.subsurface(image_rects[self.type])
-		self.image_up = self.image
-		self.image_left = pygame.transform.rotate(self.image, 90)
-		self.image_down = pygame.transform.rotate(self.image, 180)
-		self.image_right = pygame.transform.rotate(self.image, 270)
+		image = game.sprites.subsurface(image_rects[self.type])
+		self.image_up = image
+		self.image_left = pygame.transform.rotate(image, 90)
+		self.image_down = pygame.transform.rotate(image, 180)
+		self.image_right = pygame.transform.rotate(image, 270)
 
 		if self.bonus:  # 闪烁的敌人附带奖励
 			self.image1_up = self.image_up
@@ -59,11 +58,11 @@ class Enemy(Tank):
 			self.image1_down = self.image_down
 			self.image1_right = self.image_right
 
-			self.image2 = game.sprites.subsurface(image_rects[self.type+4])
-			self.image2_up = self.image2
-			self.image2_left = pygame.transform.rotate(self.image2, 90)
-			self.image2_down = pygame.transform.rotate(self.image2, 180)
-			self.image2_right = pygame.transform.rotate(self.image2, 270)
+			image2 = game.sprites.subsurface(image_rects[self.type+4])
+			self.image2_up = image2
+			self.image2_left = pygame.transform.rotate(image2, 90)
+			self.image2_down = pygame.transform.rotate(image2, 180)
+			self.image2_right = pygame.transform.rotate(image2, 270)
 
 		self.rotate(self.direction, False)
 
