@@ -507,18 +507,19 @@ class MlpGameWrapper:
 			screen = self.env.render()
 			cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
 
-		reward = 0
+		reward = -0.1
 
 		for _ in range(self.skips):
+			reward -= 0.1
 			if done:
-				reward -= 100
+				reward -= 10
 			if self.game.info['enemy_slained']:
 				reward += 100
 			if self.game.info['stop_enemy_bullet']:
 				reward += 40
 			if self.game.info['player_slained']:
 				reward -= 60
-
+			
 			done = self.game.step(action)
 			if self.render:
 				screen = self.game.render()
