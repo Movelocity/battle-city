@@ -502,7 +502,6 @@ class MlpGameWrapper:
 		done = self.env.step(action)
 		states.append(self.game.simple_render().flatten())
 		truncated = not self.game.active
-		
 		if render:
 			screen = self.env.render()
 			cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
@@ -518,13 +517,62 @@ class MlpGameWrapper:
 				reward += 40
 			if self.game.info['player_slained']:
 				reward -= 60
-			if done or truncated: break
+
 			done = self.env.step(action)
 			if render:
 				screen = self.env.render()
 				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
+			if done or truncated: break
 
 		states.append(self.game.simple_render().flatten())
+		# states.append(self.env.feature())
+		states = np.concatenate(states)
+
+		return states, reward/10, done, truncated, self.game.info
+
+class CnnGameWrapper:
+	def __init__(self, game, render=False):
+		assert type(game) == Game, f"wrong type: {type(game)}"
+		self.game = game
+		self.render = render
+
+	def reset(self, id=5):
+		self.game.reset()
+		state = self.game.render().transpose(2, 0, 1)
+		states = [state, state]
+		# states.append(self.env.feature())  # 加上25个手工构造的特征，包含自身方向，敌军相对方位
+		states = np.concatenate(states)
+		return states, info
+
+	def step(self, action):
+		states = []
+
+		done = self.env.step(action)
+		states.append(self.game.render().transpose(2, 0, 1))
+		truncated = not self.game.active
+		if render:
+			screen = states[-1].transpose(1, 2, 0)
+			cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
+
+		reward = 0
+
+		for _ in range(self.skips):
+			if done:
+				reward -= 100
+			if self.game.info['enemy_slained']:
+				reward += 100
+			if self.game.info['stop_enemy_bullet']:
+				reward += 40
+			if self.game.info['player_slained']:
+				reward -= 60
+
+			done = self.env.step(action)
+			if render:
+				screen = self.env.render()
+				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
+			if done or truncated: break
+
+		states.append(self.game.render().transpose(2, 0, 1))
 		# states.append(self.env.feature())
 		states = np.concatenate(states)
 
