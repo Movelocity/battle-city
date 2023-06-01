@@ -494,7 +494,7 @@ class MlpGameWrapper:
 		states = [state, state]
 		# states.append(self.env.feature())  # 加上25个手工构造的特征，包含自身方向，敌军相对方位
 		states = np.concatenate(states)
-		return states, info
+		return states, self.game.info
 
 	def step(self, action):
 		states = []
@@ -542,7 +542,7 @@ class CnnGameWrapper:
 		states = [state, state]
 		# states.append(self.env.feature())  # 加上25个手工构造的特征，包含自身方向，敌军相对方位
 		states = np.concatenate(states)
-		return states, info
+		return states, self.game.info
 
 	def step(self, action):
 		states = []
