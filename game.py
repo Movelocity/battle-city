@@ -502,7 +502,7 @@ class MlpGameWrapper:
 		done = self.game.step(action)
 		states.append(self.game.simple_render().flatten())
 		truncated = not self.game.active
-		if render:
+		if self.render:
 			screen = self.env.render()
 			cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
 
@@ -550,7 +550,7 @@ class CnnGameWrapper:
 		done = self.game.step(action)
 		states.append(self.game.render().transpose(2, 0, 1))
 		truncated = not self.game.active
-		if render:
+		if self.render:
 			screen = states[-1].transpose(1, 2, 0)
 			cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
 
