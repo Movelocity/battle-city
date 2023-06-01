@@ -523,10 +523,9 @@ class MlpGameWrapper:
 			if render:
 				screen = self.env.render()
 				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
-			rewards += reward
 
 		states.append(self.game.simple_render().flatten())
 		# states.append(self.env.feature())
 		states = np.concatenate(states)
 
-		return states, rewards/10, done, truncated, self.game.info
+		return states, reward/10, done, truncated, self.game.info
