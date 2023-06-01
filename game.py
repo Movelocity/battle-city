@@ -483,10 +483,11 @@ class Game():
 
 
 class MlpGameWrapper:
-	def __init__(self, game, render=False):
+	def __init__(self, game, render=False, skips=2):
 		assert type(game) == Game, f"wrong type: {type(game)}"
 		self.game = game
 		self.render = render
+		self.skips = skips
 
 	def reset(self, id=5):
 		self.game.reset()
@@ -531,10 +532,11 @@ class MlpGameWrapper:
 		return states, reward/10, done, truncated, self.game.info
 
 class CnnGameWrapper:
-	def __init__(self, game, render=False):
+	def __init__(self, game, render=False, skips=2):
 		assert type(game) == Game, f"wrong type: {type(game)}"
 		self.game = game
 		self.render = render
+		self.skips = skips
 
 	def reset(self, id=5):
 		self.game.reset()
