@@ -519,8 +519,8 @@ class MlpGameWrapper:
 				reward -= 60
 
 			done = self.game.step(action)
-			if render:
-				screen = self.env.render()
+			if self.render:
+				screen = self.game.render()
 				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
 			if done or truncated: break
 
@@ -567,8 +567,8 @@ class CnnGameWrapper:
 				reward -= 60
 
 			done = self.game.step(action)
-			if render:
-				screen = self.env.render()
+			if self.render:
+				screen = self.game.render()
 				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
 			if done or truncated: break
 
