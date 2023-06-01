@@ -499,7 +499,7 @@ class MlpGameWrapper:
 	def step(self, action):
 		states = []
 
-		done = self.env.step(action)
+		done = self.game.step(action)
 		states.append(self.game.simple_render().flatten())
 		truncated = not self.game.active
 		if render:
@@ -518,7 +518,7 @@ class MlpGameWrapper:
 			if self.game.info['player_slained']:
 				reward -= 60
 
-			done = self.env.step(action)
+			done = self.game.step(action)
 			if render:
 				screen = self.env.render()
 				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
@@ -547,7 +547,7 @@ class CnnGameWrapper:
 	def step(self, action):
 		states = []
 
-		done = self.env.step(action)
+		done = self.game.step(action)
 		states.append(self.game.render().transpose(2, 0, 1))
 		truncated = not self.game.active
 		if render:
@@ -566,7 +566,7 @@ class CnnGameWrapper:
 			if self.game.info['player_slained']:
 				reward -= 60
 
-			done = self.env.step(action)
+			done = self.game.step(action)
 			if render:
 				screen = self.env.render()
 				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
