@@ -266,26 +266,25 @@ class Game():
 		direction = [0] *4
 		direction[player.direction] = 1
 		p_bullet_pos = [[0, 0]]
-		can_fire = True
-		e_bullets = []
-		for b in self.bullets:
-			if b.owner_side == Bullet.OWNER_ENEMY:
-				e_bullets.append(b)
-			elif b.owner == player and b.state == Bullet.STATE_ACTIVE:
-				can_fire = False
-				p_bullet_pos = utils.get_relative_polar_coordinates(
-					player.rect.topleft, [b.rect.topleft])
+		# e_bullets = []
+		# for b in self.bullets:
+		# 	if b.owner_side == Bullet.OWNER_ENEMY:
+		# 		e_bullets.append(b)
+		# 	elif b.owner == player and b.state == Bullet.STATE_ACTIVE:
+		# 		can_fire = False
+		# 		p_bullet_pos = utils.get_relative_polar_coordinates(
+		# 			player.rect.topleft, [b.rect.topleft])
 
 		enemy_polars = utils.get_relative_polar_coordinates(
 			player.rect.topleft, [e.rect.topleft for e in self.enemies], required_size=4)
-		e_bullet_polars = utils.get_relative_polar_coordinates(
-			player.rect.topleft, [b.rect.topleft for b in e_bullets], required_size=4)
+		# e_bullet_polars = utils.get_relative_polar_coordinates(
+		# 	player.rect.topleft, [b.rect.topleft for b in e_bullets], required_size=4)
 		castle_ploar = utils.get_relative_polar_coordinates(
 			player.rect.topleft, [self.castle.rect.topleft])
 
-		result = [can_fire] + direction + p_bullet_pos[0] +\
-			[p[0] for p in enemy_polars] + [p[0] for p in e_bullet_polars] + \
-			[p[1] for p in enemy_polars] + [p[1] for p in e_bullet_polars] + castle_ploar[0]
+		result = [player.can_fire] + direction +\
+			[p[0] for p in enemy_polars] + [p[1] for p in enemy_polars] + castle_ploar[0]
+		# [p[0] for p in e_bullet_polars] [p[1] for p in e_bullet_polars] p_bullet_pos[0]
 		return np.array(result)
 
 	def toggleEnemyFreeze(self, freeze=True):
@@ -493,7 +492,7 @@ class MlpGameWrapper:
 		self.game.reset()
 		state = self.game.simple_render().flatten()
 		states = [state, state]
-		# states.append(self.env.feature())  # 加上25个手工构造的特征，包含自身方向，敌军相对方位
+		states.append(self.game.feature())  # 加上25个手工构造的特征，包含自身方向，敌军相对方位
 		states = np.concatenate(states)
 		return states, self.game.info
 
@@ -527,7 +526,7 @@ class MlpGameWrapper:
 			if done or truncated: break
 
 		states.append(self.game.simple_render().flatten())
-		# states.append(self.env.feature())
+		states.append(self.game.feature())
 		states = np.concatenate(states)
 
 		return states, reward/10, done, truncated, self.game.info
