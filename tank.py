@@ -19,10 +19,9 @@ class Tank:
 		self.paused = False          # tank can't do anything
 		self.shielded = False        # tank is protected from bullets
 		self.speed = 2               # px per move
-		self.max_active_bullets = 1  # how many bullets can tank fire simultaneously
 		self.side = side             # friend or foe
 		self.flash = 0               # flashing state. 0-off, 1-on
-		self.bonus = None            # each tank can pick up 1 bonus
+		self.can_fire = True
 
 		# 0 - no superpowers
 		# 1 - faster bullets
@@ -106,30 +105,21 @@ class Tank:
 			self.state = self.STATE_EXPLODING
 			self.explosion = Explosion(self.game, self.rect.topleft)
 
-			if self.bonus:
-				self.spawnBonus()
+	def fireCoolDown(self):
+		self.can_fire = True
+		self.game.info['can_fire'] = True
 
-	def fire(self, forced=False):
+	def fire(self):
 		""" Shoot a bullet 创建一个子弹
 		@param boolean forced.(是否无限制发射子弹) If false, check whether tank has exceeded his bullet quota. Default: False
 		@return boolean True if bullet was fired, false otherwise
 		"""
-		if self.state != self.STATE_ALIVE:
-			self.game.timer_pool.destroy(self.timer_uuid_fire)
+		if self.state != self.STATE_ALIVE or self.paused or not self.can_fire:
 			return False
-
-		if self.paused:
-			return False
-
-		if not forced:
-			active_bullets = 0
-			for bullet in self.game.bullets:
-				if bullet.owner == self and bullet.state == bullet.STATE_ACTIVE:
-					active_bullets += 1
-			if active_bullets >= self.max_active_bullets:
-				return False
 
 		bullet = Bullet(game=self.game, level=self.level, owner=self, position=self.rect.topleft, direction=self.direction)
+		self.can_fire = False
+		self.game.timer_pool.add(500, self.fireCoolDown, 1)
 
 		if self.superpowers > 0:  # if superpower level is at least 1
 			bullet.speed = 8

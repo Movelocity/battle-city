@@ -4,10 +4,13 @@ from game import Game
 import random
 import cv2
 import time 
+import random
+
+random.seed(666)
 
 if __name__ == "__main__":
 	cv2.startWindowThread()
-	game = Game(robot=False, render_mode="grid")
+	game = Game(robot=False)
 	# game.showMenu()
 	game.play()
 	# game.reset()

@@ -6,7 +6,7 @@ class Player(Tank):
 		super().__init__(game, level, side=0, position=None, direction=None, filename=None)
 		self.start_position = position
 		self.start_direction = direction
-		self.lives = 3
+		self.lives = 5
 		self.score = 0  # total score
 
 		# store how many bonuses in this stage this player has collected 计分板
@@ -30,6 +30,7 @@ class Player(Tank):
 			self.rotate(self.DIR_UP, False)
 		else:
 			self.rotate(direction, False)
+		self.bonus = None
 
 	def move(self, direction):
 		""" move player if possible """

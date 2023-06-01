@@ -1,5 +1,6 @@
 import pygame
 from explosion import Explosion
+import utils
 
 class Bullet():
 	(DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)         # direction constants
@@ -16,7 +17,7 @@ class Bullet():
 
 		# 1-regular everyday normal bullet
 		# 2-can destroy steel
-		self.power = 1
+		self.power = 0
 		self.image = self.game.sprites.subsurface(75*2, 74*2, 3*2, 4*2)
 
 		# position is player's top left corner, so we'll need to
@@ -96,9 +97,11 @@ class Bullet():
 
 		# check for collisions with other bullets
 		for bullet in self.game.bullets:
-			if self.state == self.STATE_ACTIVE and bullet.owner_side!=self.owner_side and bullet != self and self.rect.colliderect(bullet.rect):
+			if self.state == self.STATE_ACTIVE and bullet != self and self.rect.colliderect(bullet.rect):
 				self.destroy()
-				self.explode()
+				if bullet.owner_side != self.owner_side:
+					self.explode()
+					self.game.info['stop_enemy_bullet'] = True
 				return False
 
 		# check for collisions with players
@@ -113,8 +116,8 @@ class Bullet():
 			if enemy.state == enemy.STATE_ALIVE and self.rect.colliderect(enemy.rect):
 				friendly_fire = self.owner_side==self.OWNER_ENEMY
 				if enemy.bulletImpact(friendly_fire, self.damage, self.owner):
-					self.destroy()
-					return True if not friendly_fire else False
+					self.destroy()  # destroy bullet
+					return False
 
 		# check for collision with castle
 		if self.game.castle.active and self.rect.colliderect(self.game.castle.rect):
@@ -127,6 +130,14 @@ class Bullet():
 		if self.state != self.STATE_REMOVED:
 			self.state = self.STATE_EXPLODING
 			self.explosion = Explosion(game=self.game, position=[self.rect.left-13, self.rect.top-13])
+		if self.owner_side == self.OWNER_PLAYER:
+			for enemy in self.game.enemies:
+				if enemy.state == enemy.STATE_ALIVE:
+					d = utils.distance(self.rect.topleft, enemy.rect.topleft)
+					if d < 30:
+						enemy.bulletImpact(False, self.damage, self.owner)
+						self.game.info['explosion_near_enemy'] = True
+
 
 	def destroy(self):
 		self.state = self.STATE_REMOVED  # 设置为 STATE_REMOVED 的子弹对象会在下一帧被清除

@@ -25,12 +25,11 @@ class Game():
 		(3,8,3,6), (6,4,2,8), (4,4,4,8), (0,10,4,6), (0,6,4,10)
 	)
 
-	def __init__(self, robot=True, full_screen=False, render_mode="rgb"):
+	def __init__(self, robot=True, full_screen=False):
 		# render_mode: rgb, grid, feature
 		self.sprites = None
 		self.timer_pool = utils.Timer()
 		self.robot = robot
-		self.render_mode = render_mode
 		size = width, height = 416, 416
 		self.size = size
 
@@ -69,6 +68,8 @@ class Game():
 		self.bonuses = []
 		self.labels = []
 		self.castle = Castle(game=self)
+
+		self.info = {}
 
 	def triggerBonus(self, bonus, player, reward=None):
 		""" Execute bonus powers 捡到地图上的奖励 """
@@ -294,7 +295,7 @@ class Game():
 		self.timefreeze = freeze
 
 	def reset(self, stage=1):
-		""" Start next level. 下面会进入while循环 """
+		""" valid stages: 1~35 """
 		self.castle.rebuild()
 		del self.bullets[:]
 		del self.enemies[:]
@@ -303,10 +304,7 @@ class Game():
 		del self.timer_pool.timers[:]
 
 		# load level
-		if stage == -1:
-			self.stage = random.randint(1,35)
-		else:
-			self.stage = stage
+		self.stage = stage
 		self.level = Level(game=self, level_nr=self.stage)
 
 		enemies_l = self.levels_enemies[self.stage - 1]
@@ -314,26 +312,30 @@ class Game():
 		random.shuffle(self.level.enemies_left)
 
 		self.reloadPlayers()
-		self.timer_pool.add(3000, self.spawnEnemy) 
+		self.timer_pool.add(3000, self.spawnEnemy)
 
 		self.timefreeze = False
 		self.game_over = False
 		self.running = True     # if False, game will end w/o "game over" bussiness
 		self.active = True      # if False, players won't be able to do anything
-
-		if self.render_mode == "grid":
-			return self.simple_render(), {}
-		elif self.render_mode == "feature":
-			return self.feature(), {}
-		else:
-			return self.render(), {}
+		self.info = {  # reset info
+			"explosion_near_enemy": False,
+			"stop_enemy_bullet": False,
+			"enemy_slained": False,
+			"player_slained": False
+		}
 
 	def step(self, action:int, time_passed=33):
 		assert 0<=action<=5, f"action 值 {action} 不在有效范围"
 		# 0: fire, 1~4: move, 5: idle
 		# framerate=30
+		self.info = {  # reset info
+			"explosion_near_enemy": False,
+			"stop_enemy_bullet": False,
+			"enemy_slained": False,
+			"player_slained": False
+		}
 
-		reward = -0.1
 		player = self.players[0]
 		if player.state == player.STATE_ALIVE and not self.game_over and self.active:
 			if action == 0:
@@ -363,11 +365,10 @@ class Game():
 					reward_buffer = [0]
 					self.triggerBonus(player.bonus, player, reward_buffer)  # 有奖励的话现在就给，然后划掉
 					player.bonus = None
-					reward += reward_buffer[0]
 			elif player.state == player.STATE_DEAD:
 				self.superpowers = 0
 				player.lives -= 1
-				reward -= 60
+				self.info['player_slained'] = True
 				if player.lives > 0:
 					self.respawnPlayer(player)  # 还有命就复活，没命就结束游戏
 				else:
@@ -377,8 +378,7 @@ class Game():
 			if bullet.state == bullet.STATE_REMOVED:
 				self.bullets.remove(bullet)
 			else:
-				if bullet.update():
-					reward += 100
+				bullet.update()
 				
 		for bonus in self.bonuses:  # 移除超时的奖励
 			if bonus.active == False:
@@ -391,21 +391,10 @@ class Game():
 		if not self.game_over:
 			if not self.castle.active:  # 碉堡破了，游戏结束
 				self.game_over = True
-				reward -= 100
 
 		self.timer_pool.update(time_passed)  # 计时器心跳
 
-		# self.draw()
-		# pygame.pixelcopy.surface_to_array(self.screen_buffer, self.screen)
-		done = self.game_over 
-		truncated = not self.active
-		# return self.screen_buffer.transpose((1,0,2)), reward, done
-		if self.render_mode == "grid":
-			return self.simple_render(), reward, done, truncated, {}
-		elif self.render_mode == "feature":
-			return self.feature(), reward, done, truncated, {}
-		else:
-			return self.render(), reward, done, truncated, {}
+		return self.game_over
 
 	def save_record(self, stage, states, actions):
 		import h5py
@@ -427,7 +416,7 @@ class Game():
 			actions.extend(actions_)
 		return states, actions
 
-	def play(self):
+	def play(self, record=False):
 		assert self.robot == False, "user_mode requires an Game object with robot=False"
 
 		states, actions = [], []
@@ -471,12 +460,73 @@ class Game():
 			else:
 				action = 5
 
-			state, reward, done, truncated, info = self.step(action, time_passed=time_passed)
+			if record:
+				states.append(state)
+				actions.append(action)
+
+			done = self.step(action, time_passed=time_passed)
 			if not self.active:
 				self.reset()
-			states.append(state)
-			actions.append(action)
+			if done:
+				print("done.")
+			if self.info["explosion_near_enemy"]:
+				print("nearly hit")
+			if self.info['enemy_slained']:
+				print('enemy_slained')
+			if self.info['stop_enemy_bullet']:
+				print('stop_enemy_bullet')
+
 			self.draw()
-		self.save_record(self.stage, states, actions)
+
+		if record:
+			self.save_record(self.stage, states, actions)
 
 
+class MlpGameWrapper:
+	def __init__(self, game, render=False):
+		assert type(game) == Game, f"wrong type: {type(game)}"
+		self.game = game
+		self.render = render
+
+	def reset(self, id=5):
+		self.game.reset()
+		state = self.game.simple_render().flatten()
+		states = [state, state]
+		# states.append(self.env.feature())  # 加上25个手工构造的特征，包含自身方向，敌军相对方位
+		states = np.concatenate(states)
+		return states, info
+
+	def step(self, action):
+		states = []
+
+		done = self.env.step(action)
+		states.append(self.game.simple_render().flatten())
+		truncated = not self.game.active
+		
+		if render:
+			screen = self.env.render()
+			cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
+
+		reward = 0
+
+		for _ in range(self.skips):
+			if done:
+				reward -= 100
+			if self.game.info['enemy_slained']:
+				reward += 100
+			if self.game.info['stop_enemy_bullet']:
+				reward += 40
+			if self.game.info['player_slained']:
+				reward -= 60
+			if done or truncated: break
+			done = self.env.step(action)
+			if render:
+				screen = self.env.render()
+				cv2.imwrite(f"outputs/{self.count:0>4}.jpg", cv2.cvtColor(screen, cv2.COLOR_RGB2BGR))
+			rewards += reward
+
+		states.append(self.game.simple_render().flatten())
+		# states.append(self.env.feature())
+		states = np.concatenate(states)
+
+		return states, rewards/10, done, truncated, self.game.info

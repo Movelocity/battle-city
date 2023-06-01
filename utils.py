@@ -1,14 +1,14 @@
 
 import pygame
 import uuid
-
+import math
+import cmath
 
 class myRect(pygame.Rect):
 	""" Add type property """
 	def __init__(self, left, top, width, height, type):
 		pygame.Rect.__init__(self, left, top, width, height)
 		self.type = type
-
 
 class Timer(object):
 	def __init__(self):
@@ -57,8 +57,6 @@ class Timer(object):
 			# 		pass
 
 
-import cmath
-
 def cartesian_to_polar(x, y):
 	"""Convert cartesian coordinates to polar coordinates."""
 	r = abs(complex(x, y))
@@ -83,3 +81,6 @@ def get_relative_polar_coordinates(a, b, required_size=None, normalize=True):
 		if len(polar_coordinates)>required_size:
 			polar_coordinates = polar_coordinates[:required_size]
 	return polar_coordinates
+
+def distance(p1, p2):
+	return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)

@@ -51,11 +51,12 @@ class Level():
 		for tile in self.mapr:
 			if tile.topleft == pos:
 				if tile.type == self.TILE_BRICK:
-					self.mapr.remove(tile)
-					self.updateObstacleRects()
+					if 1 <= power < 2:
+						self.mapr.remove(tile)
+						self.updateObstacleRects()
 					return True
 				elif tile.type == self.TILE_STEEL:
-					if power == 2:  # 强子弹击穿铁块
+					if power >= 2:  # 强子弹击穿铁块
 						self.mapr.remove(tile)
 						self.updateObstacleRects()
 					return True

@@ -28,6 +28,7 @@ class Enemy(Tank):
 
 		# 1 in 5 chance this will be bonus carrier, but only if no other tank is
 		# 携带奖励的闪烁坦克死亡后，地图上会刷出奖励
+		self.bonus = False
 		if random.randint(1, 5) == 1:
 			self.bonus = True
 			for enemy in self.game.enemies:
@@ -76,11 +77,11 @@ class Enemy(Tank):
 		self.path = self.generatePath(self.direction)
 
 		# 1000 (1s) is duration between shots 自动射击间隔
-		self.timer_uuid_fire = self.game.timer_pool.add(1000, self.fire)
+		self.timer_uuid_fire = self.game.timer_pool.add(1100, self.fire)
 
 		# turn on flashing
 		if self.bonus:
-			self.timer_uuid_flash = self.game.timer_pool.add(200, self.toggleFlash)
+			self.timer_uuid_flash = self.game.timer_pool.add(500, self.toggleFlash)
 
 	def toggleFlash(self):
 		""" Toggle flash state """
@@ -298,3 +299,10 @@ class Enemy(Tank):
 				positions.append([x-px, y])
 
 		return positions
+	
+	def explode(self):
+		super().explode()
+		if self.bonus:
+			self.spawnBonus()
+		self.game.timer_pool.destroy(self.timer_uuid_fire)
+		self.game.info['enemy_slained'] = True
