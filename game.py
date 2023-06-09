@@ -229,7 +229,8 @@ class Game():
 				screen[row, col] = WATER
 
 		for b in self.bonuses:
-			self.draw_tank_tile(screen, b, fill=50)
+			row, col = b.rect.topleft
+			screen[row, col] = 50
 
 		for e in self.enemies:
 			self.draw_tank_tile(screen, e, fill=ENEMY_HEAD)
