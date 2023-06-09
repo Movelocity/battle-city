@@ -229,7 +229,8 @@ class Game():
 				screen[row, col] = WATER
 
 		for b in self.bonuses:
-			row, col = b.rect.topleft
+			x, y = b.rect.topleft
+			col, row = int(round(x/16)), int(round(y/16))
 			screen[row, col] = 50
 
 		for e in self.enemies:
