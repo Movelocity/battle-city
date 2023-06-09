@@ -228,6 +228,9 @@ class Game():
 			elif tile.type == self.level.TILE_WATER:
 				screen[row, col] = WATER
 
+		for b in self.bonuses:
+			self.draw_tank_tile(screen, b, fill=50)
+
 		for e in self.enemies:
 			self.draw_tank_tile(screen, e, fill=ENEMY_HEAD)
 
@@ -303,10 +306,7 @@ class Game():
 		del self.timer_pool.timers[:]
 
 		# load level
-		if stage == -1:
-			self.stage = random.randint(1,35)
-		else:
-			self.stage = stage
+		self.stage = min(stage%36, 1)
 		self.level = Level(game=self, level_nr=self.stage)
 
 		enemies_l = self.levels_enemies[self.stage - 1]
