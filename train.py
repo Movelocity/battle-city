@@ -9,6 +9,8 @@ from collections import namedtuple, deque
 
 import torch
 import torch.nn.functional as F
+from model import QNetwork
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"using device: {device}")
