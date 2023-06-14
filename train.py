@@ -183,7 +183,7 @@ if __name__ == "__main__":
     plt.figure(figsize=(8,3))
     plt.title(f"DQN - seed={args.seed}")
     plt.scatter(range(len(scores)), scores, s=3)
-    plt.show()
+    plt.savefig(f"log-{args.episodes}.png")
 
 # state, info = env.reset()
 # print(state.shape)
