@@ -88,3 +88,29 @@ class QNetwork(nn.Module):
     def forward(self, state):
         out = self.mlp(state)
         return out
+
+
+class QNetwork_(nn.Module):
+    def __init__(self, state_size, action_size):
+        super(QNetwork, self).__init__()
+
+        self.mlp = nn.Sequential(
+            nn.Linear(state_size, 512),
+            nn.ReLU(),
+            ResBlock(512, 256),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            ResBlock(256, 256),
+            nn.Dropout(0.2),
+            ResBlock(256, 256),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            ResBlock(128, 128, hid_layers=4),
+            ResBlock(128, 128, hid_layers=4),
+            nn.ReLU(),
+            nn.Linear(128, action_size),
+        )
+
+    def forward(self, state):
+        out = self.mlp(state)
+        return out
