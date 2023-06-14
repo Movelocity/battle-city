@@ -31,7 +31,7 @@ class Tank:
 		self.superpowers = 0
 
 		# navigation keys: fire, up, right, down, left
-		self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
+		self.controls = [pygame.K_j, pygame.K_w, pygame.K_d, pygame.K_s, pygame.K_a]
 		self.pressed = [False] * 4  # currently pressed buttons (navigation only)
 
 		self.shield_images = [
@@ -111,7 +111,7 @@ class Tank:
 
 	def fire(self, forced=False):
 		""" Shoot a bullet 创建一个子弹
-		@param boolean forced.(是否强制发射子弹) If false, check whether tank has exceeded his bullet quota. Default: False
+		@param boolean forced.(是否无限制发射子弹) If false, check whether tank has exceeded his bullet quota. Default: False
 		@return boolean True if bullet was fired, false otherwise
 		"""
 		if self.state != self.STATE_ALIVE:
@@ -205,9 +205,6 @@ class Tank:
 					tank.trophies["enemy"+str(self.type)] += 1
 					points = (self.type+1) * 100
 					tank.score += points
-					if self.game.play_sounds:
-						self.game.sounds["explosion"].play()
-
 					self.game.labels.append(Label(self.game, self.rect.topleft, str(points), 500))
 
 				self.explode()

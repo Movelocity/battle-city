@@ -1,2 +1,6 @@
 __pycache__/
 images/outputs/*
+game_cache
+.ipynb_checkpoints
+*.mp4
+outputs/*

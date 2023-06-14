@@ -36,7 +36,7 @@ class Enemy(Tank):
 					break
 
 		image_rects = [
-			(32*2, 0, 13*2, 15*2),
+			# (32*2, 0, 13*2, 15*2),
 			(32*2, 0, 13*2, 15*2),
 			(48*2, 0, 13*2, 15*2),
 			(64*2, 0, 13*2, 15*2),
@@ -68,10 +68,11 @@ class Enemy(Tank):
 		self.rotate(self.direction, False)
 
 		if position == None:  # 若未指定生成位置，随机获取一个OK的位置
-			self.rect.topleft = self.getFreeSpawningPosition()
-			if not self.rect.topleft:
+			pos = self.getFreeSpawningPosition()
+			if not pos:
 				self.state = self.STATE_DEAD
 				return
+			self.rect.topleft = pos
 
 		# list of map coords where tank should go next
 		self.path = self.generatePath(self.direction)

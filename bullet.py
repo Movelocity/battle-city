@@ -62,29 +62,21 @@ class Bullet():
 		if self.direction == self.DIR_UP:
 			self.rect.topleft = [self.rect.left, self.rect.top - self.speed]
 			if self.rect.top < 0:
-				if self.game.play_sounds and self.owner_side == self.OWNER_PLAYER:
-					self.game.sounds["steel"].play()
 				self.explode()  # 仅播放动画, 没有其它效果
 				return False
 		elif self.direction == self.DIR_RIGHT:
 			self.rect.topleft = [self.rect.left + self.speed, self.rect.top]
 			if self.rect.left > (416 - self.rect.width):
-				if self.game.play_sounds and self.owner_side == self.OWNER_PLAYER:
-					self.game.sounds["steel"].play()
 				self.explode()
 				return False
 		elif self.direction == self.DIR_DOWN:
 			self.rect.topleft = [self.rect.left, self.rect.top + self.speed]
 			if self.rect.top > (416 - self.rect.height):
-				if self.game.play_sounds and self.owner_side == self.OWNER_PLAYER:
-					self.game.sounds["steel"].play()
 				self.explode()
 				return False
 		elif self.direction == self.DIR_LEFT:
 			self.rect.topleft = [self.rect.left - self.speed, self.rect.top]
 			if self.rect.left < 0:
-				if self.game.play_sounds and self.owner == self.OWNER_PLAYER:
-					self.game.sounds["steel"].play()
 				self.explode()  
 				return False
 
@@ -96,7 +88,7 @@ class Bullet():
 		collisions = self.rect.collidelistall(rects)
 		if collisions != []:
 			for i in collisions:
-				if self.level.hitTile(rects[i].topleft, self.power, self.owner_side==self.OWNER_PLAYER):
+				if self.level.hitTile(rects[i].topleft, self.power):
 					has_collided = True
 		if has_collided:
 			self.explode()
