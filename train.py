@@ -95,7 +95,7 @@ class Agent():
         pred_qvalues = self.qnet_local(states)
         pred_qvalues = pred_qvalues.gather(1, actions.unsqueeze(1)).squeeze(1)
 
-        loss = nn.functional.mse_loss(pred_qvalues, target_qvalues)
+        loss = F.l1_loss(pred_qvalues, target_qvalues)
         
         self.optimizer.zero_grad()
         loss.backward()
