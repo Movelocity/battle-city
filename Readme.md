@@ -1,6 +1,6 @@
-# battle-city
+# DQN-Battle-City
 
-本项目作为 广东财经大学 IT技术创新实践 实验五 提交。
+本项目作为广东财经大学IT技术创新实践实验五提交。
 
 <img src="./images/screens/demo.png" alt="original" style="width: 300px; height: auto;">
 
